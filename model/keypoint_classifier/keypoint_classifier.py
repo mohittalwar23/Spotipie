@@ -16,6 +16,7 @@ class KeyPointClassifier(object):
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
+        self.last_index = 2
 
     def __call__(
         self,
@@ -30,7 +31,10 @@ class KeyPointClassifier(object):
         output_details_tensor_index = self.output_details[0]['index']
 
         result = self.interpreter.get_tensor(output_details_tensor_index)
-
-        result_index = np.argmax(np.squeeze(result))
-
-        return result_index
+        if np.max(result) >= 0.85:
+            result_index = np.argmax(np.squeeze(result))
+            self.last_index =  result_index
+            return result_index
+        else:
+            return self.last_index
+    
