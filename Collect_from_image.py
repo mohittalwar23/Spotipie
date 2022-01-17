@@ -20,7 +20,6 @@ def calc_landmark_list(image, landmarks):
     for _, landmark in enumerate(landmarks.landmark):
         landmark_x = min(int(landmark.x * image_width), image_width - 1)
         landmark_y = min(int(landmark.y * image_height), image_height - 1)
-        # landmark_z = landmark.z
 
         landmark_point.append([landmark_x, landmark_y])
 
@@ -63,7 +62,7 @@ def logging_csv(number, landmark_list):
     return
 
 
-root = "./data/Affectnet25000/train/"
+root = "Your dataset dir"
 IMAGE_FILES = []
 category = ['Anger','Happy','Neutral','Sad','Surprise']
 for path, subdirs, files in os.walk(root):
@@ -72,7 +71,6 @@ for path, subdirs, files in os.walk(root):
 
 use_brect = True
 
-# Model load #############################################################
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(
         max_num_faces=1,
@@ -89,7 +87,7 @@ for idx, file in enumerate(IMAGE_FILES):
     image = cv2.flip(image, 1)  # Mirror display
     debug_image = copy.deepcopy(image)
 
-    # Detection implementation #############################################################
+    # Detection implementation
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image.flags.writeable = False
     results = face_mesh.process(image)

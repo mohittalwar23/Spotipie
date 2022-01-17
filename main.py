@@ -17,7 +17,6 @@ def calc_landmark_list(image, landmarks):
     for _, landmark in enumerate(landmarks.landmark):
         landmark_x = min(int(landmark.x * image_width), image_width - 1)
         landmark_y = min(int(landmark.y * image_height), image_height - 1)
-        # landmark_z = landmark.z
 
         landmark_point.append([landmark_x, landmark_y])
 
@@ -93,12 +92,12 @@ cap_height = 1080
 
 use_brect = True
 
-# Camera preparation ###############################################################
+# Camera preparation
 cap = cv.VideoCapture(cap_device)
 cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
-# Model load #############################################################
+# Model load
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(
         max_num_faces=1,
@@ -109,7 +108,7 @@ face_mesh = mp_face_mesh.FaceMesh(
 keypoint_classifier = KeyPointClassifier()
 
 
-# Read labels ###########################################################
+# Read labels
 with open('model/keypoint_classifier/keypoint_classifier_label.csv',
             encoding='utf-8-sig') as f:
     keypoint_classifier_labels = csv.reader(f)
@@ -121,19 +120,19 @@ mode = 0
 
 while True:
 
-    # Process Key (ESC: end) #################################################
+    # Process Key (ESC: end)
     key = cv.waitKey(10)
     if key == 27:  # ESC
         break
 
-    # Camera capture #####################################################
+    # Camera capture
     ret, image = cap.read()
     if not ret:
         break
     image = cv.flip(image, 1)  # Mirror display
     debug_image = copy.deepcopy(image)
 
-    # Detection implementation #############################################################
+    # Detection implementation
     image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
 
     image.flags.writeable = False
@@ -161,7 +160,7 @@ while True:
                     brect,
                     keypoint_classifier_labels[facial_emotion_id])
 
-    # Screen reflection #############################################################
+    # Screen reflection
     cv.imshow('Facial Emotion Recognition', debug_image)
 
 cap.release()

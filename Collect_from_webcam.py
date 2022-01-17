@@ -10,7 +10,7 @@ def select_mode(key, mode):
         number = key - 48
     if key == 110:  # n
         mode = 0
-    if key == 107:  # k
+    if key == 107:  # k  # record mode
         mode = 1
     return number, mode
 
@@ -24,7 +24,6 @@ def calc_landmark_list(image, landmarks):
     for _, landmark in enumerate(landmarks.landmark):
         landmark_x = min(int(landmark.x * image_width), image_width - 1)
         landmark_y = min(int(landmark.y * image_height), image_height - 1)
-        # landmark_z = landmark.z
 
         landmark_point.append([landmark_x, landmark_y])
 
@@ -75,12 +74,11 @@ cap_height = 1080
 
 use_brect = True
 
-# Camera preparation ###############################################################
+# Camera preparation
 cap = cv.VideoCapture(cap_device)
 cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
-# Model load #############################################################
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(
         max_num_faces=1,
@@ -92,20 +90,20 @@ mode = 0
 
 while True:
 
-    # Process Key (ESC: end) #################################################
+    # Process Key (ESC: end)
     key = cv.waitKey(10)
     if key == 27:  # ESC
         break
     number, mode = select_mode(key, mode)
 
-    # Camera capture #####################################################
+    # Camera capture 
     ret, image = cap.read()
     if not ret:
         break
     image = cv.flip(image, 1)  # Mirror display
     debug_image = copy.deepcopy(image)
 
-    # Detection implementation #############################################################
+    # Detection implementation 
     image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
 
     image.flags.writeable = False
@@ -124,8 +122,11 @@ while True:
             # Write to the dataset file
             logging_csv(number, mode, pre_processed_landmark_list)
 
-    # Screen reflection #############################################################
-    cv.imshow('Hand Gesture Recognition', debug_image)
+    if mode == 1 :
+        cv.putText(debug_image, "MODE:" + 'Record keypoints mode', (10, 90),
+                cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1,
+                cv.LINE_AA)
+    cv.imshow('Facial Emotion Recognition', debug_image)
 
 cap.release()
 cv.destroyAllWindows()
