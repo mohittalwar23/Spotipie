@@ -1,6 +1,7 @@
 # Reference from Kazuhito Takahashi(https://twitter.com/KzhtTkhs)
 - [MediaPipe](https://mediapipe.dev/)
 - [Kazuhito00/mediapipe-python-sample](https://github.com/Kazuhito00/mediapipe-python-sample)
+- [Kazuhito00/hand-gesture-recognition-using-mediapipe](https://github.com/Kazuhito00/hand-gesture-recognition-using-mediapipe)
 
 # facial emotion recognition using mediapipe
 - Estimate face mesh using MediaPipe(Python version).This is a sample program that recognizes facial emotion with a simple multilayer perceptron using the detected key points that returned from mediapipe.Although this model is 97% accurate, there is no generalization due to too little training data.
