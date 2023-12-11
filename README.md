@@ -8,10 +8,7 @@ This project combines emotion recognition using facial landmarks and hand gestur
 - [Features](#features)
 - [Installation](#installation)
 - [Dependencies](#dependencies)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
-- [Reference](#reference)
+- [References](#references)
 
 ## Introduction
 
@@ -61,6 +58,27 @@ Ensure you have the following dependencies installed:
   pyttsx3
   threading
 ```
+
+## References
+
+Some instances in the first draft were referred from:
+
+- [Spotify-RFID-Record-Player](https://github.com/talaexe/Spotify-RFID-Record-Player)
+
+In the second draft, an attempt was made to replicate emotion detection with CNN:
+
+- [Emotion Detection with CNN](https://github.com/datamagic2020/Emotion_detection_with_CNN/tree/main)
+
+However, we switched to using MEDIAPIPE in the third draft.
+
+The entire emotion detection part used in our code is referenced from:
+
+- [Facial Emotion Recognition using Mediapipe](https://github.com/REWTAO/Facial-emotion-recognition-using-mediapipe)
+
+
+
+
+
 
 
 
