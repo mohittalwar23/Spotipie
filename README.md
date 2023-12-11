@@ -2,13 +2,9 @@
 
 This project combines emotion recognition using facial landmarks and hand gesture control to interact with the Spotify API.
 
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Features](#features)
-- [Installation](#installation)
-- [Dependencies](#dependencies)
-- [References](#references)
+## Reference from 
+- Rattasart Sakunrat
+- Kazuhito Takahashi(https://twitter.com/KzhtTkhs)
 
 ## Introduction
 
@@ -58,6 +54,10 @@ Ensure you have the following dependencies installed:
   pyttsx3
   threading
 ```
+
+## Author 
+
+Mohit Talwar
 
 ## References
 
