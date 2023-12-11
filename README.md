@@ -2,9 +2,6 @@
 
 This project combines emotion recognition using facial landmarks and hand gesture control to interact with the Spotify API.
 
-## Reference from 
-- Rattasart Sakunrat
-- Kazuhito Takahashi(https://twitter.com/KzhtTkhs)
 
 ## Introduction
 
@@ -78,6 +75,7 @@ The entire emotion detection part used in our code is referenced from:
 ## License
 
 hand-gesture-recognition-using-mediapipe is under [Apache V2 License](https://github.com/mohittalwar23/Spotipie/blob/main/LICENSE)
+Since [Facial Emotion Recognition using Mediapipe](https://github.com/REWTAO/Facial-emotion-recognition-using-mediapipe) was originally refered from Kazuhito Takahashi(https://twitter.com/KzhtTkhs)
 
 
 
