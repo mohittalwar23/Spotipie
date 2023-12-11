@@ -40,3 +40,24 @@ Ensure you have the following dependencies installed:
 - spotipy
 - pyttsx3
 - threading
+
+##Installation
+
+
+- Clone the repository.
+
+```plaintext
+- git clone https://github.com/mohittalwar23/Spotipie
+
+- Install the Required packages.
+
+```plaintext
+- pip install -r requirements2.txt
+
+
+
+
+
+
+
+
