@@ -28,18 +28,18 @@ This project integrates emotion recognition based on facial landmarks with hand 
 Ensure you have the following dependencies installed:
 
 ```plaintext
-- cv2
-- csv
-- copy
-- itertools
-- numpy
-- mediapipe
-- model (custom module)
-- cvzone
-- time
-- spotipy
-- pyttsx3
-- threading
+  cv2
+  csv
+  copy
+  itertools
+  numpy
+  mediapipe
+  model (custom module)
+  cvzone
+  time
+  spotipy
+  pyttsx3
+  threading
 
 ##Installation
 
@@ -47,12 +47,12 @@ Ensure you have the following dependencies installed:
 - Clone the repository.
 
 ```plaintext
-- git clone https://github.com/mohittalwar23/Spotipie
+  git clone https://github.com/mohittalwar23/Spotipie
 
 - Install the Required packages.
 
 ```plaintext
-- pip install -r requirements2.txt
+  pip install -r requirements2.txt
 
 
 
