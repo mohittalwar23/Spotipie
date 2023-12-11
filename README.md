@@ -6,8 +6,8 @@ This project combines emotion recognition using facial landmarks and hand gestur
 
 - [Introduction](#introduction)
 - [Features](#features)
-- [Dependencies](#dependencies)
 - [Installation](#installation)
+- [Dependencies](#dependencies)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
@@ -22,6 +22,26 @@ This project integrates emotion recognition based on facial landmarks with hand 
 - Emotion recognition using facial landmarks.
 - Hand gesture control for Spotify playback.
 - Automatic playlist selection based on detected mood.
+
+## Installation
+
+
+- Clone the repository.
+
+```plaintext
+  git clone https://github.com/mohittalwar23/Spotipie
+```
+
+- Install the Required packages.
+
+```plaintext
+  pip install -r requirements2.txt
+```
+
+-Set up the Spotify API credentials:
+  You will need a Spotify premium account for this.
+  Create a Spotify Developer account at https://developer.spotify.com/ and create a new app.
+  Obtain the CLIENT_ID, CLIENT_SECRET, and set the redirect_uri to "http://localhost:8080" in the SpotifyOAuth initialization.
 
 ## Dependencies
 
@@ -42,20 +62,9 @@ Ensure you have the following dependencies installed:
   threading
 ```
 
-##Installation
 
 
-- Clone the repository.
 
-```plaintext
-  git clone https://github.com/mohittalwar23/Spotipie
-```
-
-- Install the Required packages.
-
-```plaintext
-  pip install -r requirements2.txt
-```
 
 
 
