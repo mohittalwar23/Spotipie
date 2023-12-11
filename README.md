@@ -39,9 +39,9 @@ This project integrates emotion recognition based on facial landmarks with hand 
 ```
 
 - Set up the Spotify API credentials:
-  You will need a Spotify premium account for this.
-  Create a Spotify Developer account at https://developer.spotify.com/ and create a new app.
-  Obtain the CLIENT_ID, CLIENT_SECRET, and set the redirect_uri to "http://localhost:8080" in the SpotifyOAuth initialization.
+  - You will need a Spotify premium account for this.
+  - Create a Spotify Developer account at https://developer.spotify.com/ and create a new app.
+  - Obtain the CLIENT_ID, CLIENT_SECRET, and set the redirect_uri to http://localhost:8080 in the SpotifyOAuth initialization.
 
 ## Dependencies
 
