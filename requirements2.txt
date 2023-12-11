@@ -1,0 +1,7 @@
+opencv-python
+csv
+numpy
+mediapipe
+pyttsx3
+cvzone
+spotipy

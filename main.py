@@ -1,13 +1,18 @@
+import cv2 as cv 
 import csv
 import copy
 import itertools
-
-import cv2 as cv
 import numpy as np
 import mediapipe as mp
 from model import KeyPointClassifier
+from cvzone.HandTrackingModule import HandDetector
+import time
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+import pyttsx3
+import threading
 
-
+# Emotion Recognition Setup
 def calc_landmark_list(image, landmarks):
     image_width, image_height = image.shape[1], image.shape[0]
 
@@ -86,18 +91,11 @@ def draw_info_text(image, brect, facial_text):
 
     return image
 
-cap_device = 0
-cap_width = 1920
-cap_height = 1080
-
 use_brect = True
+# Hand Gesture and Spotify Setup
+cap = cv.VideoCapture(0)
+hand_detector = HandDetector(detectionCon=0.8, maxHands=2)
 
-# Camera preparation
-cap = cv.VideoCapture(cap_device)
-cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
-cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
-
-# Model load
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(
         max_num_faces=1,
@@ -106,7 +104,6 @@ face_mesh = mp_face_mesh.FaceMesh(
         min_tracking_confidence=0.5) 
 
 keypoint_classifier = KeyPointClassifier()
-
 
 # Read labels
 with open('model/keypoint_classifier/keypoint_classifier_label.csv',
@@ -118,50 +115,197 @@ with open('model/keypoint_classifier/keypoint_classifier_label.csv',
 
 mode = 0
 
+# Spotify API credentials
+DEVICE_ID = "your_device_id"
+CLIENT_ID = "your_client_id"
+CLIENT_SECRET = "your_client_secret"
+
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+    client_id=CLIENT_ID,
+    client_secret=CLIENT_SECRET,
+    redirect_uri="http://localhost:8080",
+    scope="user-read-playback-state,user-modify-playback-state,playlist-read-private"
+))
+
+engine = pyttsx3.init()
+
+cooldown_duration = 5
+last_command_time = 0
+last_action = None
+display_timer = 0
+repeat_mood_detection = False
+tts_lock = threading.Lock()  # Lock for thread safety
+
+def execute_command(command, device_id):
+    global last_command_time, last_action, display_timer
+    current_time = time.time()
+
+    # Check cooldown and repeated commands
+    if (current_time - last_command_time < cooldown_duration) and (last_action == command):
+        return
+
+    try:
+        # Check the current playback state
+        current_state = sp.current_playback()
+        if current_state is not None and current_state["is_playing"]:
+            # If the playback state matches the command, skip the command
+            if (command == 'play' and current_state["is_playing"]) or \
+               (command == 'pause' and not current_state["is_playing"]):
+                return
+
+        # Execute the command based on the input
+        if command == 'play':
+            sp.start_playback(device_id=device_id)
+            run_tts_in_thread("Playing !!")
+        elif command == 'pause':
+            sp.pause_playback(device_id=device_id)
+            run_tts_in_thread("Paused !!")
+        elif command == 'next':
+            if current_state is not None and current_state["is_playing"]:
+                sp.next_track(device_id=device_id)
+                run_tts_in_thread("Playing Next track")
+        elif command == 'previous':
+            if current_state is not None and current_state["is_playing"]:
+                # Check if we are not at the beginning of the playlist
+                if current_state["progress_ms"] > 3000:  # Assuming that 3000 ms (3 seconds) is a reasonable threshold
+                    sp.previous_track(device_id=device_id)
+                    run_tts_in_thread("Playing Previous track")
+
+        last_command_time = current_time
+        last_action = command
+        display_timer = current_time + 2  # Display the text for 2 seconds
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+def run_tts_in_thread(message):
+    threading.Thread(target=execute_tts, args=(message,), daemon=True).start()
+
+def execute_tts(message):
+    with tts_lock:
+        engine.say(message)
+        engine.runAndWait()
+
+def play_playlist(mood):
+    try:
+        playlists = sp.current_user_playlists()
+        for playlist in playlists['items']:
+            if mood.lower() in playlist['name'].lower():
+                sp.start_playback(device_id=DEVICE_ID, context_uri=playlist['uri'])
+                run_tts_in_thread(f"Playing {playlist['name']} playlist for your {mood.lower()} mood.")
+                return True
+
+        run_tts_in_thread(f"Sorry, I couldn't find a playlist for your {mood.lower()} mood.")
+        return False
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False
+
+def determine_mood():
+    default_mood = "Neutral"
+    detected_mood = None
+
+    run_tts_in_thread("Let's determine your mood. Please wait.")
+
+    for _ in range(60):
+        ret, image = cap.read()
+        if not ret:
+            break
+        image = cv.flip(image, 1)  # Mirror display
+        debug_image = copy.deepcopy(image)
+
+        # Detection implementation
+        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+
+        image.flags.writeable = False
+        results = face_mesh.process(image)
+        image.flags.writeable = True
+
+        if results.multi_face_landmarks is not None:
+            for face_landmarks in results.multi_face_landmarks:
+                # Bounding box calculation
+                brect = calc_bounding_rect(debug_image, face_landmarks)
+
+                # Landmark calculation
+                landmark_list = calc_landmark_list(debug_image, face_landmarks)
+
+                # Conversion to relative coordinates / normalized coordinates
+                pre_processed_landmark_list = pre_process_landmark(
+                    landmark_list)
+
+                # Emotion classification
+                facial_emotion_id = keypoint_classifier(pre_processed_landmark_list)
+                detected_mood = keypoint_classifier_labels[facial_emotion_id]
+
+                # Drawing part
+                debug_image = draw_bounding_rect(use_brect, debug_image, brect)
+                debug_image = draw_info_text(
+                        debug_image,
+                        brect,
+                        detected_mood)
+
+                cv.imshow('Mood Detection', debug_image)
+                cv.waitKey(1)
+
+    if detected_mood:
+        mood = detected_mood
+        run_tts_in_thread(f"Your current mood is {mood.lower()}.")
+
+    return detected_mood or default_mood
+
+
+def greet_and_start():
+    run_tts_in_thread("Hello! Welcome to your personalized assistant.")
+    mood = determine_mood()
+    play_playlist(mood)
+
+# Initial greeting and mood determination
+greet_and_start()
+
+def detect_emotion():
+    global repeat_mood_detection
+    mood = determine_mood()
+    play_playlist(mood)
+    repeat_mood_detection = False
+
 while True:
+    success, img = cap.read()
+    hands, img = hand_detector.findHands(img, draw=True)
 
-    # Process Key (ESC: end)
-    key = cv.waitKey(10)
-    if key == 27:  # ESC
+    # Check for hand gestures (continuous)
+    for hand in hands:
+        lm_list = hand["lmList"]
+        center_point = lm_list[9]  # Assuming index 9 is the center of the palm
+        fingers1 = hand_detector.fingersUp(hand)
+        hand_type = hand["type"]
+
+        if hand_type == "Right":
+            if fingers1[0] == 0 and fingers1[1] == 1 and fingers1[2] == 0 and fingers1[3] == 0 and fingers1[4] == 0:
+                execute_command('play', DEVICE_ID)
+            if fingers1[0] == 0 and fingers1[1] == 1 and fingers1[2] == 1 and fingers1[3] == 0 and fingers1[4] == 0:
+                execute_command('next', DEVICE_ID)
+            if fingers1[0] == 0 and fingers1[1] == 0 and fingers1[2] == 0 and fingers1[3] == 0 and fingers1[4] == 1:
+                execute_command('previous', DEVICE_ID)
+            if fingers1[0] == 0 and fingers1[1] == 0 and fingers1[2] == 0 and fingers1[3] == 0 and fingers1[4] == 0:
+                execute_command('pause', DEVICE_ID)
+
+        if hand_type == "Left":
+            if fingers1[0] == 1 and fingers1[1] == 0 and fingers1[2] == 0 and fingers1[3] == 0 and fingers1[4] == 0:
+                detect_emotion()
+                
+            
+        
+
+    # Display the text for a certain duration
+    if time.time() < display_timer:
+        cv.putText(img, f"Command: {last_action}", (10, 50), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv.LINE_AA)
+
+    cv.imshow("Assistant", img)
+    key = cv.waitKey(1) & 0xFF
+    if key == ord('q'):
         break
 
-    # Camera capture
-    ret, image = cap.read()
-    if not ret:
-        break
-    image = cv.flip(image, 1)  # Mirror display
-    debug_image = copy.deepcopy(image)
-
-    # Detection implementation
-    image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-
-    image.flags.writeable = False
-    results = face_mesh.process(image)
-    image.flags.writeable = True
-
-    if results.multi_face_landmarks is not None:
-        for face_landmarks in results.multi_face_landmarks:
-            # Bounding box calculation
-            brect = calc_bounding_rect(debug_image, face_landmarks)
-
-            # Landmark calculation
-            landmark_list = calc_landmark_list(debug_image, face_landmarks)
-
-            # Conversion to relative coordinates / normalized coordinates
-            pre_processed_landmark_list = pre_process_landmark(
-                landmark_list)
-
-            #emotion classification
-            facial_emotion_id = keypoint_classifier(pre_processed_landmark_list)
-            # Drawing part
-            debug_image = draw_bounding_rect(use_brect, debug_image, brect)
-            debug_image = draw_info_text(
-                    debug_image,
-                    brect,
-                    keypoint_classifier_labels[facial_emotion_id])
-
-    # Screen reflection
-    cv.imshow('Facial Emotion Recognition', debug_image)
-
+ 
 cap.release()
 cv.destroyAllWindows()
