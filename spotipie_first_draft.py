@@ -1,13 +1,16 @@
+# Import necessary libraries
 import cv2
 from cvzone.HandTrackingModule import HandDetector
 import time
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
-DEVICE_ID = "2081a96804fca397e6041b8352e0cd5868f58b0d"
-CLIENT_ID = "e34cf156a9734786b57c4c80450eb791"
-CLIENT_SECRET = "c046cedc38ec483398251682d38a60b3"
+# Spotify API credentials
+DEVICE_ID = "your_device_id"
+CLIENT_ID = "your_client_id"
+CLIENT_SECRET = "your_client_secret"
 
+# Initialize camera and hand detector
 cap = cv2.VideoCapture(0)
 detector = HandDetector(detectionCon=0.8, maxHands=2)
 
@@ -19,11 +22,13 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     scope="user-read-playback-state,user-modify-playback-state"
 ))
 
+# Command execution control variables
 cooldown_duration = 5
 last_command_time = 0
 last_action = None
 display_timer = 0
 
+# Function to execute Spotify commands
 def execute_command(command, device_id):
     global last_command_time, last_action, display_timer
     current_time = time.time()
@@ -55,6 +60,7 @@ def execute_command(command, device_id):
                 if current_state["progress_ms"] > 3000:  # Assuming that 3000 ms (3 seconds) is a reasonable threshold
                     sp.previous_track(device_id=device_id)
 
+        # Update control variables
         last_command_time = current_time
         last_action = command
         display_timer = current_time + 2  # Display the text for 2 seconds
@@ -62,6 +68,7 @@ def execute_command(command, device_id):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+# Main loop for video capture and hand tracking
 while True:
     success, img = cap.read()
     hands, img = detector.findHands(img)
@@ -73,8 +80,9 @@ while True:
         centerPoint1 = hand1["center"]
         handType1 = hand1["type"]
 
-        # print(lmList1)
         fingers1 = detector.fingersUp(hand1)
+
+        # Check hand gestures and execute corresponding commands
         if handType1 == "Right":
             if fingers1[0] == 0 and fingers1[1] == 1 and fingers1[2] == 0 and fingers1[3] == 0 and fingers1[4] == 0:
                 execute_command('play', DEVICE_ID)
@@ -89,5 +97,6 @@ while True:
     if time.time() < display_timer:
         cv2.putText(img, f"Command: {last_action}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
+    # Display the image
     cv2.imshow("Image", img)
     cv2.waitKey(1)
