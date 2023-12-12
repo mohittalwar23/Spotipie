@@ -13,6 +13,10 @@ This project integrates emotion recognition based on facial landmarks with hand 
 - Hand gesture control for Spotify playback.
 - Automatic playlist selection based on detected mood.
 
+## DEMO
+
+https://www.youtube.com/watch?v=UxPueFpvLFE
+
 ## Installation
 
 
