@@ -15,7 +15,8 @@ This project integrates emotion recognition based on facial landmarks with hand 
 
 ## DEMO
 
-https://www.youtube.com/watch?v=UxPueFpvLFE
+[![Spotipie Demo](https://img.youtube.com/vi/UxPueFpvLFE/0.jpg)](https://www.youtube.com/watch?v=UxPueFpvLFE)
+
 
 ## Installation
 
